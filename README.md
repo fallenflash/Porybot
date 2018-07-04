@@ -75,6 +75,15 @@ Some settings are common sense, heres some info for some that you may have quest
  - **code_thumbnail**
     - decorational thumbnail image for the friend code embeds
 
+
+
+Samples
+=================
+![Friend Code](https://whgpogo.com/assets/github/friendcode.png "Logo Title Text 1")
+![silphcard](https://whgpogo.com/assets/github/silphcard.png "FallenFlash's Silph Card")
+![directions](https://whgpogo.com/assets/github/directions.png "Gym Directions")
+
+
 ### Credit to:
 Smbambling whose coding i used as a heavy influence and teacher
 
