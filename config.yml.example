@@ -1,0 +1,40 @@
+---
+description: 'WHG BOT'
+command_prefix: '!'
+pm_help: True    #if you want help messages to be sent privately
+bot_token: ''  #your discord bot token
+
+
+# Privileged accounts that can run extra commands
+privileged_ids:
+  - ''
+  - ''
+  - ''
+
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  database: 'mapdatabase' 
+  user: 'user'
+  password: 'password'
+  # custom database for user information as to
+    #1. not polute map db encase of map upgrades
+    #2. to allow for extensive future additions
+  database2: 'botdatabase'
+
+# functionality
+Worldopole: True #true/false (if worldopole php page is installed)
+W_baseurl : 'https://www.mysite.com/' #remember trailing slash
+
+badgeserver: true         #true/false, member of fallenflashes badge server or have similar emojis setup
+maptype: 'monocle'        #monocle/rocketmap
+api_key: ''               #google static maps api key
+
+#personalization
+
+discord_icon: ''
+
+code_thumbnail: ''      
+#thumbnail displayed in !code command.
+

@@ -1,0 +1,4 @@
+fuzzywuzzy[speedup]
+mysqlclient
+requests
+pyyaml
