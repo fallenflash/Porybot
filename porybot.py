@@ -10,7 +10,7 @@ Returns:
         may be used by its self to call your own, or followed by a name to call theirs
 
     setsilph -- used to set name on silphcard if different from discord
-        usercase "setsilph fallenflash"
+        usecase "setsilph fallenflash"
 
     setloc -- to set location if you want to use something other than silph provides
         usecase "setloc Virginia Beach, Va"  (accepts any string)
@@ -72,7 +72,6 @@ def main(args, loglevel):
     with open(bot_config_file, "r") as c_file:
         bot_config = yaml.load(c_file)
 
-
     # Open database connection
     try:
         database = MySQLdb.connect(
@@ -104,7 +103,7 @@ def main(args, loglevel):
     try:
         cursor2.execute(
             "CREATE TABLE IF NOT EXISTS `users` ("
-	        "`Id` VARCHAR(20) NOT NULL,"
+            "`Id` VARCHAR(20) NOT NULL,"
             "`Username` VARCHAR(50) NOT NULL,"
             "`Friend_Code` VARCHAR(12) NOT NULL DEFAULT 'x',"
             "`Silph_Name` VARCHAR(50) NULL DEFAULT NULL,"
@@ -114,18 +113,18 @@ def main(args, loglevel):
             ")"
             "COLLATE='latin1_swedish_ci'"
             "ENGINE=InnoDB;"
-                    )
+        )
         database2.ping()
         database2.commit()
     except MySQLdb.Error as err:
-        sys.stderr.write("[ERROR] {}: {}\n".format(err.args[0], err.args[1]))
+        sys.stderr.write("")
 
-
-    bot = Bot(description=bot_config['description'],command_prefix=bot_config['command_prefix'], pm_help=bot_config['pm_help'])
-
+    bot = Bot(description=bot_config['description'],
+              command_prefix=bot_config['command_prefix'], pm_help=bot_config['pm_help'])
 
     # This is what happens everytime the bot launches. In this case, it prints information like server count, user count the bot is connected to, and the bot id in the console.
     # caution in changing it as it may cause malfunctions with the bot
+
     @bot.event
     async def on_ready():
         print('Logged in as '+bot.user.name+' (ID:'+bot.user.id+') | Connected to ' +
@@ -240,6 +239,7 @@ def main(args, loglevel):
         pass_context=True
     )
     async def setcode(ctx, friend_code):
+        database2.ping(True)
         username = str(ctx.message.author)
         name = ctx.message.author.display_name
         userid = str(ctx.message.author.id)
@@ -260,6 +260,7 @@ def main(args, loglevel):
         pass_context=True
     )
     async def code(ctx, *potential):
+        database2.ping(True)
         if not potential:
             user = ctx.message.author
         else:
@@ -323,7 +324,6 @@ def main(args, loglevel):
         await bot.say(f'Your location has been set to: {location}')
         return
 
-
     @bot.command(
         name='setsilph',
         description="To set your location to be displayed on your trainer cart",
@@ -360,6 +360,7 @@ def main(args, loglevel):
         pass_context=True
     )
     async def silph(ctx, *potential):
+        database2.ping(True)
         if not potential:
             user = ctx.message.author
             notset = f"{user.display_name}, it seems your Silph League username is different than your Discord username. Use the command `!setsilph` to set your username"
@@ -433,6 +434,8 @@ def main(args, loglevel):
         pass_context=True
     )
     async def directions(ctx, *gymname):
+        database.ping(True)
+        author = ctx.message.author
         gym_name = ' '.join(gymname)
         if bot_config['maptype'] == 'monocle':
             cursor.execute('SELECT name FROM forts;')
@@ -446,19 +449,28 @@ def main(args, loglevel):
             gym_name, gyms, scorer=fuzz.ratio, score_cutoff=75)
         if results != None:
             if bot_config['maptype'] == 'monocle':
-                cursor.execute(f"SELECT lat, lon FROM forts WHERE name like '{results[0]}';")
+                cursor.execute(
+                    f"SELECT lat, lon, url FROM forts WHERE name like '{results[0]}';")
             elif bot_config['maptype'] == 'rocketmap':
-                cursor.execute(f"SELECT a.latitude, a.longitude from gym a inner join gymdetails b on a.gym_id = b.gym_id where b.name like '{results[0]}';")
+                cursor.execute(
+                    f"SELECT a.latitude, a.longitude , b.url from gym a inner join gymdetails b on a.gym_id = b.gym_id where b.name like '{results[0]}';")
             lat_lon = cursor.fetchall()
             if cursor.rowcount:
                 point = f"{lat_lon[0][0]},{lat_lon[0][1]}"
                 apikey = bot_config['api_key']
+                if lat_lon[0][2] != None:
+                    thumbnailurl = lat_lon[0][2]
+                authorname = ctx.message.author
+                description = f"{authorname}, click one of these links for your directions to {results[0]}.\n[Google](http://maps.google.com/maps?q={point})     [Apple](https://maps.apple.com/?daddr={point})     [Waze](https://waze.com/ul?ll={point})"
                 url = f'https://www.google.com/maps/?q={point}'
                 image = f'https://maps.googleapis.com/maps/api/staticmap?autoscale=1&size=600x300&maptype=roadmap&key={apikey}&format=png&visual_refresh=true&markers=size:small%7Ccolor:0x9f009f%7Cshadow:true%7C{point}'
                 color = ctx.message.author.colour
                 title = f'Here are directions to {results[0]}'
-                embed = discord.Embed(title=title, url=url, color=color)
+                embed = discord.Embed(
+                    title=title, url=url, colour=color, description=description)
                 embed.set_image(url=image)
+                if lat_lon[0][2] != None:
+                    embed.set_thumbnail(url=thumbnailurl)
                 try:
                     await bot.send_message(ctx.message.channel, embed=embed)
                 except:
