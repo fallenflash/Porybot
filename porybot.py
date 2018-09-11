@@ -309,6 +309,7 @@ def main(args, loglevel):
         pass_context=True
     )
     async def setloc(ctx, *location):
+        database2.ping(True)
         user = ctx.message.author
         username = str(user)
         userid = str(user.id)
@@ -330,6 +331,7 @@ def main(args, loglevel):
         pass_context=True
     )
     async def setsilph(ctx, *silphname):
+        database2.ping(True)
         user = ctx.message.author
         username = str(user)
         userid = str(user.id)
@@ -427,6 +429,44 @@ def main(args, loglevel):
             await bot.send_message(ctx.message.channel, embed=embed)
         except:
             await bot.say('Theres seems to be an error')
+
+    @bot.command(
+        name='mysql',
+        description="Testing if the bot is connected to the Database",
+        pass_context=True
+    )
+    async def mysql(ctx):
+        if ctx.message.author.id in bot_config['privileged_ids']: 
+            try:
+                database = MySQLdb.connect(
+                    bot_config['mysql']['host'],
+                    bot_config['mysql']['user'],
+                    bot_config['mysql']['password'],
+                    bot_config['mysql']['database']
+                )
+            except MySQLdb.Error as err:
+                sys.stderr.write("[ERROR] {}: {}\n".format(err.args[0], err.args[1]))
+                sys.exit(3)
+            else:
+                # Prepare a cursor object using cursor() method
+                cursor = database.cursor()
+            # x2 for bot database
+            try:
+                database2 = MySQLdb.connect(
+                    bot_config['mysql']['host'],
+                    bot_config['mysql']['user'],
+                    bot_config['mysql']['password'],
+                    bot_config['mysql']['database2']
+                )
+            except MySQLdb.Error as err:
+                sys.stderr.write("[ERROR] {}: {}\n".format(err.args[0], err.args[1]))
+                sys.exit(3)
+            else:
+                # Prepare a cursor object using cursor() method
+                cursor2 = database2.cursor()
+            await bot.say('MySQL Database has been reconnected.')
+        else:
+            await bot.say('Sorry you do not have permissions to do that!')
 
     @bot.command(
         name='directions',
